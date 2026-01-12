@@ -29,8 +29,7 @@
                     <td class="p-8">
                         <div class="mb-4">
                             <h3 class="text-3xl font-black tracking-tight text-black">{{ session.client_name }}</h3>
-                            <p class="text-sm text-stone-600 font-bold mt-1">{{ session.client_email or 'no email assigned' }}</p>
-                        </div>
+                            </div>
                         <span class="text-[10px] font-black uppercase bg-stone-200 px-3 py-1.5 rounded-lg text-stone-700">
                             {{ session.session_type }}
                         </span>
@@ -63,12 +62,12 @@
 
                     <td class="p-8">
                         <div class="flex flex-col items-end gap-3">
-                            <a href="{{ url_for('send_quick_email', id=session.id) }}"
-                               class="bg-black text-white px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-stone-800 transition-all w-full text-center shadow-md">
-                               Send Email ✉️
+                            <a href="{{ url_for('portal', id=session.id) }}"
+                               class="bg-black text-white px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-stone-800 transition-all w-full text-center shadow-md border-2 border-black">
+                               Open Portal 🎞️
                             </a>
                             <div class="flex gap-3 w-full">
-                                <button onclick="openEditModal('{{ session.id }}', '{{ session.client_name }}', '{{ session.client_email }}', '{{ session.location }}', '{{ session.date }}', '{{ session.total_fee }}', '{{ session.amount_paid }}')"
+                                <button onclick="openEditModal('{{ session.id }}', '{{ session.client_name }}', '{{ session.location }}', '{{ session.date }}', '{{ session.total_fee }}', '{{ session.amount_paid }}')"
                                         class="flex-1 border-2 border-stone-300 py-3 rounded-xl text-xs font-black uppercase text-stone-800 hover:border-black hover:bg-stone-100 transition-all">
                                     Edit
                                 </button>
@@ -92,15 +91,9 @@
         <h2 class="text-4xl font-black uppercase italic mb-10 tracking-tighter">Update Archive</h2>
 
         <form id="editForm" method="POST" class="space-y-6">
-            <div class="grid grid-cols-2 gap-8">
-                <div>
-                    <label class="text-xs font-black uppercase text-stone-900 tracking-widest">Client Name</label>
-                    <input type="text" name="client_name" id="edit_name" class="w-full p-5 bg-stone-100 rounded-2xl border-2 border-stone-200 font-bold text-lg mt-2 focus:border-black outline-none transition-all">
-                </div>
-                <div>
-                    <label class="text-xs font-black uppercase text-stone-900 tracking-widest">Client Email</label>
-                    <input type="email" name="client_email" id="edit_email" class="w-full p-5 bg-stone-100 rounded-2xl border-2 border-stone-200 font-bold text-lg mt-2 focus:border-black outline-none transition-all">
-                </div>
+            <div>
+                <label class="text-xs font-black uppercase text-stone-900 tracking-widest">Client Name</label>
+                <input type="text" name="client_name" id="edit_name" class="w-full p-5 bg-stone-100 rounded-2xl border-2 border-stone-200 font-bold text-lg mt-2 focus:border-black outline-none transition-all">
             </div>
 
             <div>
@@ -132,13 +125,12 @@
 </div>
 
 <script>
-function openEditModal(id, name, email, location, date, fee, paid) {
+function openEditModal(id, name, location, date, fee, paid) {
     const modal = document.getElementById('editModal');
     const form = document.getElementById('editForm');
     form.action = '/update-session/' + id;
 
     document.getElementById('edit_name').value = name;
-    document.getElementById('edit_email').value = email;
     document.getElementById('edit_location').value = location;
     document.getElementById('edit_date').value = date;
     document.getElementById('edit_fee').value = fee;
