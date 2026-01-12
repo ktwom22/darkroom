@@ -52,15 +52,6 @@ app.config['MAIL_DEFAULT_SENDER'] = ('The Darkroom', app.config['MAIL_USERNAME']
 db = SQLAlchemy(app)
 mail = Mail(app)
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
 
 # --- DATABASE MODELS ---
 class User(db.Model, UserMixin):
@@ -104,6 +95,16 @@ class Photo(db.Model):
     is_selected = db.Column(db.Boolean, default=False)
     session_id = db.Column(db.String(36), db.ForeignKey('session.id'))
 
+with app.app_context():
+    db.create_all()
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 # --- AUTH ROUTES ---
 @app.route('/signup', methods=['GET', 'POST'])
@@ -512,6 +513,4 @@ def retouching_queue():
                            pending_balance=pending_balance)
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
