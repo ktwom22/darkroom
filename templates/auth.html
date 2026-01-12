@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="max-w-2xl mx-auto mt-12 mb-20">
+    <div class="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-xl border-2 border-black">
+
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold tracking-tighter mb-2">
+                {{ 'Studio Registration' if mode == 'signup' else 'Studio Login' }}
+            </h1>
+            <p class="text-[11px] uppercase tracking-[0.3em] text-stone-400 font-black">
+                {{ 'Initialize your professional archive' if mode == 'signup' else 'Secure Access Portal' }}
+            </p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+
+            {% if mode == 'signup' %}
+            <div class="space-y-2">
+                <label class="text-[10px] font-black uppercase tracking-widest ml-2">Business Name</label>
+                <input type="text" name="business_name" placeholder="Vows & Views Studio"
+                       class="w-full bg-white border-2 border-stone-200 p-5 rounded-2xl text-lg font-bold focus:border-black outline-none transition-all" required>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase tracking-widest ml-2">First Name</label>
+                    <input type="text" name="first_name" placeholder="First Name"
+                           class="w-full bg-white border-2 border-stone-200 p-5 rounded-2xl font-bold focus:border-black outline-none" required>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase tracking-widest ml-2">Last Name</label>
+                    <input type="text" name="last_name" placeholder="Last Name"
+                           class="w-full bg-white border-2 border-stone-200 p-5 rounded-2xl font-bold focus:border-black outline-none" required>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-[10px] font-black uppercase tracking-widest ml-2">Phone Number</label>
+                <input type="tel" name="phone_number" placeholder="(555) 000-0000"
+                       class="w-full bg-white border-2 border-stone-200 p-5 rounded-2xl font-bold focus:border-black outline-none">
+            </div>
+            {% endif %}
+
+            <div class="space-y-2">
+                <label class="text-[10px] font-black uppercase tracking-widest ml-2">Email / Username</label>
+                <input type="email" name="email" placeholder="email@studio.com"
+                       class="w-full bg-white border-2 border-stone-200 p-5 rounded-2xl font-bold focus:border-black outline-none" required>
+            </div>
+
+            <div class="space-y-2">
+                <label class="text-[10px] font-black uppercase tracking-widest ml-2">Password</label>
+                <input type="password" name="password" placeholder="••••••••"
+                       class="w-full bg-white border-2 border-stone-200 p-5 rounded-2xl font-bold focus:border-black outline-none" required>
+            </div>
+
+            {% if mode == 'signup' %}
+            <div class="p-6 border-2 border-dashed border-stone-200 rounded-2xl bg-stone-50">
+                <label class="text-[10px] font-black uppercase tracking-widest block mb-2 text-stone-400">Studio Logo (Optional)</label>
+                <input type="file" name="logo" class="text-xs font-bold file:bg-black file:text-white file:rounded-full file:px-4 file:py-2 file:border-none file:mr-4">
+            </div>
+            {% endif %}
+
+            <button type="submit" class="w-full bg-black text-white py-6 rounded-2xl text-[11px] font-black uppercase tracking-[0.4em] shadow-xl hover:bg-stone-800 transition-all mt-6 active:scale-95">
+                {{ 'Confirm Registration' if mode == 'signup' else 'Enter Archive' }}
+            </button>
+        </form>
+
+        <div class="mt-10 pt-8 border-t-2 border-stone-100 text-center">
+            {% if mode == 'login' %}
+            <p class="text-[10px] text-stone-400 font-black uppercase tracking-widest">
+                New Studio? <a href="/signup" class="text-black border-b-2 border-black pb-1 ml-2">Initialize Account</a>
+            </p>
+            {% else %}
+            <p class="text-[10px] text-stone-400 font-black uppercase tracking-widest">
+                Existing Member? <a href="/login" class="text-black border-b-2 border-black pb-1 ml-2">Sign In</a>
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

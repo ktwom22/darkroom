@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vows & Views | Master Calendar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    <style>
+        body { background-color: #f4f4f2; color: #000; font-family: 'Inter', sans-serif; }
+        /* Force Calendar High Contrast */
+        .fc { background: white; padding: 20px; border-radius: 12px; border: 2px solid #000; }
+        .fc-td, .fc-th, .fc-daygrid-day { border: 1px solid #000 !important; } /* Darker Grid Lines */
+        .fc-toolbar-title { font-weight: 900 !important; text-transform: uppercase; }
+        .fc-col-header-cell-cushion { color: #000; font-weight: 900; }
+        .fc-daygrid-day-number { color: #000; font-weight: 700; }
+        /* Event Styling */
+        .fc-event { background-color: #000 !important; border: none !important; color: #fff !important; padding: 5px !important; font-weight: bold !important; }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+            <h1 class="text-4xl font-black uppercase italic">Master Schedule</h1>
+            <a href="/" class="bg-black text-white px-6 py-3 rounded-lg font-bold uppercase text-xs">Back to Portals</a>
+        </div>
+
+        <div id="calendar"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek' },
+                events: '/api/calendar-events',
+                eventClick: function(info) {
+                    if (info.event.url) { window.location.href = info.event.url; return false; }
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>

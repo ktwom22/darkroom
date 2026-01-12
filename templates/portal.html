@@ -1,0 +1,152 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="pt-16 pb-12 px-6 text-center">
+    <div class="max-w-4xl mx-auto">
+        <span class="text-[10px] font-black uppercase tracking-[0.5em] text-stone-400 block mb-4">Digital Archive Portal</span>
+        <h1 class="serif text-6xl md:text-7xl italic text-stone-900 mb-12">{{ session.client_name }}</h1>
+
+        <div class="max-w-2xl mx-auto mb-16 px-4">
+            <div class="flex justify-between items-end mb-3">
+                <div class="text-left">
+                    <p class="text-[8px] font-black uppercase tracking-widest text-stone-400">Archive Investment</p>
+                    <p class="text-xl font-bold">${{ "{:,.2f}".format(session.amount_paid or 0) }} <span class="text-stone-300 font-light text-sm">/ ${{ "{:,.2f}".format(session.total_fee or 0) }}</span></p>
+                </div>
+                {% set percent = ((session.amount_paid or 0) / (session.total_fee or 1) * 100)|round|int %}
+                <p class="text-sm font-black {% if percent >= 100 %}text-green-600{% else %}text-stone-900{% endif %}">{{ percent }}%</p>
+            </div>
+
+            <div class="w-full h-3 bg-stone-100 rounded-full overflow-hidden border border-stone-200/50">
+                <div class="h-full bg-stone-900 transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(0,0,0,0.1)]"
+                     style="width: {{ percent }}%;"></div>
+            </div>
+
+            {% if percent < 100 %}
+            <div class="mt-4 inline-flex items-center gap-2 px-3 py-1 bg-amber-50 rounded-full border border-amber-100">
+                <p class="text-[8px] font-black text-amber-600 uppercase tracking-tighter">🔒 Images Watermarked & Downloads Restricted until Paid</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="max-w-7xl mx-auto px-6 mb-12">
+    <div class="bg-stone-50 border border-stone-200 rounded-[2.5rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+        <div>
+            <h3 class="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">Selection Phase</h3>
+            <p class="text-sm font-medium">
+                {% set selected_photos = session.photos|selectattr('is_selected', 'equalto', True)|list %}
+                <strong>{{ selected_photos|length }}</strong> images favored for retouching.
+            </p>
+        </div>
+
+        {% if not session.selection_submitted %}
+            <a href="{{ url_for('submit_selections', id=session.id) }}"
+               onclick="return confirm('Ready to finalize? This will lock your choices for retouching.')"
+               class="bg-black text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-stone-800 transition-all shadow-lg active:scale-95">
+                Submit for Final Retouching
+            </a>
+        {% else %}
+            <div class="flex items-center gap-3 px-8 py-5 bg-stone-900 text-white rounded-2xl border border-stone-800 shadow-xl">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                </span>
+                <p class="text-[10px] font-black uppercase tracking-widest">Locked for Retouching</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="py-12 px-6 max-w-7xl mx-auto">
+    {% if session.photos %}
+        <div class="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+            {% for photo in session.photos %}
+            <div class="relative group break-inside-avoid rounded-3xl overflow-hidden transition-all duration-700
+                {% if photo.is_selected %} ring-[12px] ring-red-50/50 shadow-2xl scale-[1.02] z-10 {% else %} bg-stone-100 {% endif %}">
+
+                <img src="{{ url_for('display_image', filename=photo.filename) }}"
+                     class="w-full h-auto block transition-all duration-1000 ease-in-out select-none
+                     {% if photo.is_selected %} grayscale-0 scale-105 {% else %} grayscale hover:grayscale-0 {% endif %}"
+                     loading="lazy" oncontextmenu="return false;">
+
+                {% if percent < 100 %}
+                <div class="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden opacity-25 select-none z-20">
+                    <p class="text-stone-900 font-black text-xl md:text-2xl uppercase tracking-[0.6em] -rotate-45 whitespace-nowrap">Vows & Views Proof</p>
+                </div>
+                {% endif %}
+
+                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-6 z-30">
+                    <div class="flex justify-end">
+                        {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('delete_photo', photo_id=photo.id) }}"
+                           class="w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 shadow-xl transition-all">✕</a>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        {% if not session.selection_submitted %}
+                        <a href="{{ url_for('toggle_selection', photo_id=photo.id) }}"
+                           class="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all transform active:scale-75
+                           {% if photo.is_selected %} bg-red-500 text-white animate-pulse {% else %} bg-white text-black {% endif %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="{% if photo.is_selected %}currentColor{% else %}none{% endif %}" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                        </a>
+                        {% else %}
+                        <div class="w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all
+                           {% if photo.is_selected %} bg-red-500 text-white {% else %} bg-stone-200 text-stone-400 {% endif %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="{% if photo.is_selected %}currentColor{% else %}none{% endif %}" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                        </div>
+                        {% endif %}
+
+                        {% if percent >= 100 %}
+                        <a href="{{ url_for('display_image', filename=photo.filename) }}" download
+                           class="w-14 h-14 bg-white text-black rounded-full flex items-center justify-center hover:bg-stone-100 transition-all shadow-2xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        </a>
+                        {% else %}
+                        <div class="w-14 h-14 bg-white/20 backdrop-blur-xl text-white/50 rounded-full flex items-center justify-center cursor-help" title="Locked until paid">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="py-40 text-center text-stone-300 italic serif text-2xl">Gallery curating in progress...</div>
+    {% endif %}
+</section>
+
+{% if current_user.is_authenticated %}
+<section class="bg-stone-50 py-24 px-6 rounded-t-[4rem] border-t border-stone-200">
+    <div class="max-w-xl mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-8">Studio Manager</h2>
+        <form action="{{ url_for('upload', session_id=session.id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <div class="relative group">
+                <input type="file" name="file" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" onchange="previewFiles(this)">
+                <div class="border-2 border-dashed border-stone-300 rounded-[2rem] p-12 bg-white group-hover:border-black transition-all">
+                    <p id="uploadLabel" class="text-stone-400 font-bold uppercase tracking-widest text-[10px]">Sync High-Res Assets</p>
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-black text-white py-6 rounded-2xl font-black text-[11px] uppercase tracking-[0.4em] shadow-xl">Publish to Portal</button>
+        </form>
+    </div>
+</section>
+{% endif %}
+
+<script>
+function previewFiles(input) {
+    const label = document.getElementById('uploadLabel');
+    label.innerText = input.files.length > 0 ? `${input.files.length} Assets Staged` : "Sync High-Res Assets";
+}
+</script>
+{% endblock %}

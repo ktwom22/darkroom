@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="max-w-4xl mx-auto py-12 px-6">
+    <div class="mb-12">
+        <a href="{{ url_for('dashboard') }}" class="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 hover:text-black transition-all flex items-center gap-2">
+            ← Back to Dashboard
+        </a>
+        <h1 class="text-5xl font-extrabold tracking-tighter mt-4">Studio Support</h1>
+        <p class="text-stone-500 mt-2 font-medium">Direct line to the Vows & Views development team.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div class="lg:col-span-2">
+            <div class="bg-white border-4 border-black rounded-[2.5rem] p-8 md:p-10 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+                <form action="/support" method="POST" class="space-y-6">
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-black uppercase text-stone-400 ml-2">Studio</label>
+                            <div class="p-5 bg-stone-100 rounded-2xl font-bold text-stone-500 border-2 border-transparent">
+                                {{ current_user.business_name }}
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-black uppercase text-stone-400 ml-2">Email</label>
+                            <div class="p-5 bg-stone-100 rounded-2xl font-bold text-stone-500 border-2 border-transparent">
+                                {{ current_user.email }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest ml-2">Priority / Category</label>
+                        <select name="subject" class="w-full p-5 rounded-2xl border-2 border-stone-200 focus:border-black outline-none font-bold appearance-none bg-white">
+                            <option>Technical Issue / Bug</option>
+                            <option>Billing Question</option>
+                            <option>Feature Request</option>
+                            <option>General Feedback</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest ml-2">How can we assist your shop?</label>
+                        <textarea name="message" rows="6" placeholder="Describe the issue or suggestion..." required
+                                  class="w-full p-5 rounded-2xl border-2 border-stone-200 focus:border-black outline-none font-bold bg-white"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-black text-white py-6 rounded-2xl font-black uppercase tracking-[0.4em] shadow-xl hover:bg-stone-800 transition-all active:scale-95 text-xs">
+                        Dispatch to Support
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="space-y-8">
+            <div class="bg-stone-900 text-white p-8 rounded-[2rem]">
+                <h3 class="text-xs font-black uppercase tracking-widest mb-4">Direct Help</h3>
+                <p class="text-stone-400 text-sm leading-relaxed mb-6">
+                    Need an immediate answer? Check the documentation or reach out via our studio text line.
+                </p>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center text-sm">📱</span>
+                        <p class="text-xs font-bold">{{ current_user.phone_number or "Admin Line Ready" }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-2 border-stone-200 p-8 rounded-[2rem]">
+                <h3 class="text-xs font-black uppercase tracking-widest mb-2">System Status</h3>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <p class="text-[10px] font-black uppercase">All Engines Operational</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
