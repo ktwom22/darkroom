@@ -49,9 +49,14 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', 'ktwom22@gmail.com
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', 'nagx lauv zyir xnvl')
 app.config['MAIL_DEFAULT_SENDER'] = ('The Darkroom', app.config['MAIL_USERNAME'])
 
-# --- INITIALIZE CORE SYSTEMS ---
 db = SQLAlchemy(app)
 mail = Mail(app)
+
+# THE CRITICAL PART: Force table creation on Railway
+with app.app_context():
+    print("Connecting to database and creating tables...")
+    db.create_all()
+    print("Database tables created successfully!")
 
 login_manager = LoginManager()
 login_manager.init_app(app)
