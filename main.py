@@ -52,19 +52,9 @@ app.config['MAIL_DEFAULT_SENDER'] = ('The Darkroom', app.config['MAIL_USERNAME']
 db = SQLAlchemy(app)
 mail = Mail(app)
 
-# THE CRITICAL PART: Force table creation on Railway
-with app.app_context():
-    print("Connecting to database and creating tables...")
-    db.create_all()
-    print("Database tables created successfully!")
-
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
-
-# Auto-create tables on startup (Essential for fresh Railway Postgres)
-with app.app_context():
-    db.create_all()
 
 
 @login_manager.user_loader
