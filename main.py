@@ -191,13 +191,17 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email', '').strip()  # Strip whitespace
+        email = request.form.get('email', '').strip().lower()  # Normalize email
         password = request.form.get('password', '')
         
         app.logger.info(f"Login attempt received")
         
-        # Try case-insensitive email lookup
-        user = User.query.filter(User.email.ilike(email)).first()
+        # Try exact match first (efficient for new users with normalized emails)
+        user = User.query.filter_by(email=email).first()
+        
+        # Fallback to case-insensitive search for legacy users
+        if not user:
+            user = User.query.filter(User.email.ilike(email)).first()
         
         if not user:
             app.logger.warning(f"Login failed - user not found")
