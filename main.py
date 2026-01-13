@@ -140,17 +140,17 @@ def unauthorized():
 def signup():
     if request.method == 'POST':
         # 1. Collect data from form
-        email = request.form.get('email')
-        password = request.form.get('password')
-        business_name = request.form.get('business_name')
-        first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name')
-        phone_number = request.form.get('phone_number')
+        email = request.form.get('email', '').strip().lower()  # Normalize email
+        password = request.form.get('password', '')
+        business_name = request.form.get('business_name', '').strip()
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        phone_number = request.form.get('phone_number', '').strip()
 
         app.logger.info(f"Signup attempt received")
 
-        # 2. Check if user already exists (Prevents generic errors)
-        existing_user = User.query.filter_by(email=email).first()
+        # 2. Check if user already exists (case-insensitive check)
+        existing_user = User.query.filter(User.email.ilike(email)).first()
         if existing_user:
             app.logger.warning(f"Signup failed - email already exists")
             flash("An account with this email already exists.")
@@ -191,20 +191,26 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+        email = request.form.get('email', '').strip()  # Strip whitespace
+        password = request.form.get('password', '')
         
         app.logger.info(f"Login attempt received")
         
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password, password):
+        # Try case-insensitive email lookup
+        user = User.query.filter(User.email.ilike(email)).first()
+        
+        if not user:
+            app.logger.warning(f"Login failed - user not found")
+            flash("Invalid email or password.")
+        elif not check_password_hash(user.password, password):
+            app.logger.warning(f"Login failed - incorrect password for user ID: {user.id}")
+            flash("Invalid email or password.")
+        else:
             login_user(user, remember=True)
             session.permanent = True
             app.logger.info(f"Login successful for user ID: {user.id}")
             return redirect(url_for('dashboard'))
-        
-        app.logger.warning(f"Login failed - invalid credentials")
-        flash("Invalid credentials.")
+            
     return render_template('auth.html', mode='login')
 
 
