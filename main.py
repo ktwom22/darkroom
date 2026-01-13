@@ -121,7 +121,7 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     app.logger.debug(f"Loading user with ID: {user_id}")
-    user = User.query.get(int(user_id))
+    user = db.session.get(User, int(user_id))
     if user:
         app.logger.debug(f"User loaded successfully: {user.email}")
     else:
