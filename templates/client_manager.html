@@ -1,19 +1,20 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<section class="max-w-7xl mx-auto py-12 px-6">
-    <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 border-b-2 border-stone-200 pb-10">
+<section class="max-w-7xl mx-auto py-8 md:py-12 px-4 md:px-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-6 border-b-2 border-stone-200 pb-10">
         <div>
-            <h1 class="text-6xl font-black tracking-tighter text-stone-900 uppercase italic">Projects</h1>
-            <p class="text-sm font-bold uppercase tracking-[0.3em] text-stone-500 mt-2">Active Session Control</p>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tighter text-stone-900 uppercase italic">Projects</h1>
+            <p class="text-xs md:text-sm font-bold uppercase tracking-[0.3em] text-stone-500 mt-2">Active Session Control</p>
         </div>
-        <a href="{{ url_for('dashboard') }}" class="bg-black text-white px-10 py-5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-stone-800 transition-all shadow-lg">
+        <a href="{{ url_for('dashboard') }}" class="w-full md:w-auto bg-black text-white px-10 py-5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-stone-800 transition-all shadow-lg text-center">
             ← Dashboard
         </a>
     </div>
 
-    <div class="bg-white border-2 border-stone-200 rounded-[2.5rem] overflow-hidden shadow-xl">
-        <table class="w-full text-left border-collapse">
+    <div class="bg-white border-2 border-stone-200 rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden shadow-xl">
+
+        <table class="hidden md:table w-full text-left border-collapse">
             <thead>
                 <tr class="bg-stone-100 border-b-2 border-stone-200">
                     <th class="p-8 text-xs font-black uppercase tracking-widest text-stone-700">Client Identity</th>
@@ -25,16 +26,14 @@
             <tbody class="divide-y-2 divide-stone-100">
                 {% for session in sessions %}
                 <tr class="hover:bg-stone-50 transition-colors">
-
                     <td class="p-8">
                         <div class="mb-4">
                             <h3 class="text-3xl font-black tracking-tight text-black">{{ session.client_name }}</h3>
-                            </div>
+                        </div>
                         <span class="text-[10px] font-black uppercase bg-stone-200 px-3 py-1.5 rounded-lg text-stone-700">
                             {{ session.session_type }}
                         </span>
                     </td>
-
                     <td class="p-8">
                         <div class="space-y-5">
                             <div>
@@ -47,7 +46,6 @@
                             </div>
                         </div>
                     </td>
-
                     <td class="p-8">
                         {% set balance = (session.total_fee or 0) - (session.amount_paid or 0) %}
                         <div>
@@ -59,92 +57,115 @@
                             {% endif %}
                         </div>
                     </td>
-
                     <td class="p-8">
                         <div class="flex flex-col items-end gap-3">
-                            <a href="{{ url_for('portal', id=session.id) }}"
-                               class="bg-black text-white px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-stone-800 transition-all w-full text-center shadow-md border-2 border-black">
-                               Open Portal 🎞️
-                            </a>
+                            <a href="{{ url_for('portal', id=session.id) }}" class="bg-black text-white px-8 py-4 rounded-xl text-xs font-black uppercase tracking-widest w-full text-center border-2 border-black">Open Portal 🎞️</a>
                             <div class="flex gap-3 w-full">
-                                <button onclick="openEditModal('{{ session.id }}', '{{ session.client_name }}', '{{ session.location }}', '{{ session.date }}', '{{ session.total_fee }}', '{{ session.amount_paid }}')"
-                                        class="flex-1 border-2 border-stone-300 py-3 rounded-xl text-xs font-black uppercase text-stone-800 hover:border-black hover:bg-stone-100 transition-all">
-                                    Edit
-                                </button>
-                                <a href="{{ url_for('complete_job', id=session.id) }}"
-                                   class="flex-1 bg-stone-100 text-stone-500 py-3 rounded-xl text-xs font-black uppercase text-center hover:bg-red-600 hover:text-white transition-all">
-                                   Archive
-                                </a>
+                                <button onclick="openEditModal('{{ session.id }}', '{{ session.client_name }}', '{{ session.location }}', '{{ session.date }}', '{{ session.total_fee }}', '{{ session.amount_paid }}')" class="flex-1 border-2 border-stone-300 py-3 rounded-xl text-xs font-black uppercase text-stone-800">Edit</button>
+                                <a href="{{ url_for('complete_job', id=session.id) }}" class="flex-1 bg-stone-100 text-stone-500 py-3 rounded-xl text-xs font-black uppercase text-center">Archive</a>
                             </div>
                         </div>
                     </td>
-
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        <div class="md:hidden divide-y-2 divide-stone-100">
+            {% for session in sessions %}
+            <div class="p-6 space-y-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-3xl font-black tracking-tight text-black">{{ session.client_name }}</h3>
+                        <span class="inline-block mt-2 text-[10px] font-black uppercase bg-stone-200 px-3 py-1.5 rounded-lg text-stone-700">
+                            {{ session.session_type }}
+                        </span>
+                    </div>
+                    {% set balance = (session.total_fee or 0) - (session.amount_paid or 0) %}
+                    <div class="text-right">
+                        <p class="text-[10px] font-black uppercase text-stone-500 tracking-widest">Balance</p>
+                        <p class="text-xl font-black {{ 'text-red-600' if balance > 0 else 'text-green-600' }}">
+                            {{ "${:,.2f}".format(balance) if balance > 0 else "PAID" }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 bg-stone-50 p-4 rounded-2xl">
+                    <div>
+                        <p class="text-[10px] font-black uppercase text-stone-500 mb-1 tracking-widest">Location</p>
+                        <p class="text-sm font-bold text-stone-900 italic">📍 {{ session.location or "Studio" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black uppercase text-stone-500 mb-1 tracking-widest">Date</p>
+                        <p class="text-sm font-bold text-stone-900">📅 {{ session.date or "TBD" }}</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <a href="{{ url_for('portal', id=session.id) }}" class="block w-full bg-black text-white py-4 rounded-xl text-xs font-black uppercase tracking-widest text-center shadow-md">Open Portal 🎞️</a>
+                    <div class="flex gap-3">
+                        <button onclick="openEditModal('{{ session.id }}', '{{ session.client_name }}', '{{ session.location }}', '{{ session.date }}', '{{ session.total_fee }}', '{{ session.amount_paid }}')" class="flex-1 border-2 border-stone-300 py-4 rounded-xl text-xs font-black uppercase text-stone-800 text-center">Edit</button>
+                        <a href="{{ url_for('complete_job', id=session.id) }}" class="flex-1 bg-stone-100 text-stone-500 py-4 rounded-xl text-xs font-black uppercase text-center">Archive</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </section>
 
-<div id="editModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-6">
-    <div class="bg-white w-full max-w-2xl rounded-[3rem] p-12 border-4 border-black shadow-2xl">
-        <h2 class="text-4xl font-black uppercase italic mb-10 tracking-tighter">Update Archive</h2>
-
-        <form id="editForm" method="POST" class="space-y-6">
+<div id="editModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 md:p-6">
+    <div class="bg-white w-full max-w-2xl rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 border-4 border-black shadow-2xl max-h-[90vh] overflow-y-auto">
+        <h2 class="text-2xl md:text-4xl font-black uppercase italic mb-6 md:mb-10 tracking-tighter">Update Archive</h2>
+        <form id="editForm" method="POST" class="space-y-4 md:space-y-6">
             <div>
-                <label class="text-xs font-black uppercase text-stone-900 tracking-widest">Client Name</label>
-                <input type="text" name="client_name" id="edit_name" class="w-full p-5 bg-stone-100 rounded-2xl border-2 border-stone-200 font-bold text-lg mt-2 focus:border-black outline-none transition-all">
+                <label class="text-[10px] font-black uppercase text-stone-900 tracking-widest">Client Name</label>
+                <input type="text" name="client_name" id="edit_name" class="w-full p-4 bg-stone-100 rounded-xl border-2 border-stone-200 font-bold text-base mt-1 outline-none">
             </div>
-
             <div>
-                <label class="text-xs font-black uppercase text-stone-900 tracking-widest">Shoot Location</label>
-                <input type="text" name="location" id="edit_location" class="w-full p-5 bg-stone-100 rounded-2xl border-2 border-stone-200 font-bold text-lg mt-2 focus:border-black outline-none">
+                <label class="text-[10px] font-black uppercase text-stone-900 tracking-widest">Shoot Location</label>
+                <input type="text" name="location" id="edit_location" class="w-full p-4 bg-stone-100 rounded-xl border-2 border-stone-200 font-bold text-base mt-1 outline-none">
             </div>
-
-            <div class="grid grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 <div>
-                    <label class="text-xs font-black uppercase text-stone-900 tracking-widest">Date</label>
-                    <input type="date" name="date" id="edit_date" class="w-full p-5 bg-stone-100 rounded-2xl border-2 border-stone-200 font-bold mt-2">
+                    <label class="text-[10px] font-black uppercase text-stone-900 tracking-widest">Date</label>
+                    <input type="date" name="date" id="edit_date" class="w-full p-4 bg-stone-100 rounded-xl border-2 border-stone-200 font-bold mt-1">
                 </div>
                 <div>
-                    <label class="text-xs font-black uppercase text-stone-900 tracking-widest">Total Fee ($)</label>
-                    <input type="number" step="0.01" name="total_fee" id="edit_fee" class="w-full p-5 bg-stone-100 rounded-2xl border-2 border-stone-200 font-bold text-lg mt-2">
+                    <label class="text-[10px] font-black uppercase text-stone-900 tracking-widest">Total Fee ($)</label>
+                    <input type="number" step="0.01" name="total_fee" id="edit_fee" class="w-full p-4 bg-stone-100 rounded-xl border-2 border-stone-200 font-bold mt-1">
                 </div>
                 <div>
-                    <label class="text-xs font-black uppercase text-stone-900 tracking-widest">Amount Paid ($)</label>
-                    <input type="number" step="0.01" name="amount_paid" id="edit_paid" class="w-full p-5 bg-stone-100 rounded-2xl border-2 border-stone-200 font-bold text-lg mt-2">
+                    <label class="text-[10px] font-black uppercase text-stone-900 tracking-widest">Paid ($)</label>
+                    <input type="number" step="0.01" name="amount_paid" id="edit_paid" class="w-full p-4 bg-stone-100 rounded-xl border-2 border-stone-200 font-bold mt-1">
                 </div>
             </div>
-
-            <div class="flex gap-6 pt-10">
-                <button type="button" onclick="closeEditModal()" class="flex-1 py-5 text-stone-500 font-black uppercase text-xs tracking-widest hover:text-black">Cancel</button>
-                <button type="submit" class="flex-1 py-5 bg-black text-white font-black uppercase rounded-2xl text-xs tracking-[0.3em] hover:bg-stone-800 shadow-xl transition-all">Save Changes</button>
+            <div class="flex flex-col-reverse md:flex-row gap-4 pt-6 md:pt-10">
+                <button type="button" onclick="closeEditModal()" class="py-4 text-stone-500 font-black uppercase text-xs tracking-widest">Cancel</button>
+                <button type="submit" class="flex-1 py-4 md:py-5 bg-black text-white font-black uppercase rounded-2xl text-xs tracking-[0.3em] shadow-xl">Save Changes</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+// Logic remains identical to your working script
 function openEditModal(id, name, location, date, fee, paid) {
     const modal = document.getElementById('editModal');
     const form = document.getElementById('editForm');
     form.action = '/update-session/' + id;
-
     document.getElementById('edit_name').value = name;
     document.getElementById('edit_location').value = location;
     document.getElementById('edit_date').value = date;
     document.getElementById('edit_fee').value = fee;
     document.getElementById('edit_paid').value = paid;
-
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 }
-
 function closeEditModal() {
     document.getElementById('editModal').classList.add('hidden');
     document.body.style.overflow = 'auto';
 }
-
 window.onclick = function(event) {
     let modal = document.getElementById('editModal');
     if (event.target == modal) { closeEditModal(); }
