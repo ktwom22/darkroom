@@ -31,6 +31,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # --- SESSION CONFIGURATION ---
 # Configure session to be more persistent and secure
+# IMPORTANT: Set SESSION_COOKIE_SECURE=True in production environment variables for HTTPS
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'False') == 'True'  # Set to True in production with HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access to session cookie
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
@@ -146,12 +147,12 @@ def signup():
         last_name = request.form.get('last_name')
         phone_number = request.form.get('phone_number')
 
-        app.logger.info(f"Signup attempt for email: {email}")
+        app.logger.info(f"Signup attempt received")
 
         # 2. Check if user already exists (Prevents generic errors)
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
-            app.logger.warning(f"Signup failed - email already exists: {email}")
+            app.logger.warning(f"Signup failed - email already exists")
             flash("An account with this email already exists.")
             return redirect(url_for('signup'))
 
@@ -176,14 +177,13 @@ def signup():
             # 5. Automatically log them in and head to dashboard
             login_user(new_user, remember=True)
             session.permanent = True
-            app.logger.info(f"Signup successful for user: {email}")
+            app.logger.info(f"Signup successful for user ID: {new_user.id}")
             return redirect(url_for('dashboard'))
 
         except Exception as e:
             db.session.rollback()  # Undo any partial changes
-            app.logger.error(f"Database Error during signup: {e}")
+            app.logger.error(f"Database error during signup: {type(e).__name__}")
             flash("An error occurred during registration. Please try again.")
-            print(f"Database Error: {e}")  # This helps you debug in the terminal
 
     return render_template('auth.html', mode='signup')
 
@@ -194,16 +194,16 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        app.logger.info(f"Login attempt for email: {email}")
+        app.logger.info(f"Login attempt received")
         
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
             login_user(user, remember=True)
             session.permanent = True
-            app.logger.info(f"Login successful for user: {email}")
+            app.logger.info(f"Login successful for user ID: {user.id}")
             return redirect(url_for('dashboard'))
         
-        app.logger.warning(f"Login failed for email: {email}")
+        app.logger.warning(f"Login failed - invalid credentials")
         flash("Invalid credentials.")
     return render_template('auth.html', mode='login')
 
