@@ -1,8 +1,9 @@
 import os
 import uuid
 import json
+import logging
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -16,10 +17,25 @@ from email.message import EmailMessage
 basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+app.logger.setLevel(logging.INFO)
+
 # --- CORE SETTINGS ---
 # Pulls from Railway Variables, falls back to a string for local dev
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'vows-and-views-studio-secret')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# --- SESSION CONFIGURATION ---
+# Configure session to be more persistent and secure
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'False') == 'True'  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access to session cookie
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours in seconds
+app.config['SESSION_COOKIE_NAME'] = 'darkroom_session'
 
 # --- DATABASE ENGINE (The Darkroom Archive) ---
 db_url = os.environ.get('DATABASE_URL')
@@ -104,7 +120,19 @@ login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    app.logger.debug(f"Loading user with ID: {user_id}")
+    user = User.query.get(int(user_id))
+    if user:
+        app.logger.debug(f"User loaded successfully: {user.email}")
+    else:
+        app.logger.warning(f"User not found for ID: {user_id}")
+    return user
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    app.logger.warning(f"Unauthorized access attempt - redirecting to login")
+    flash("Please log in to access this page.")
+    return redirect(url_for('login'))
 
 # --- AUTH ROUTES ---
 @app.route('/signup', methods=['GET', 'POST'])
@@ -118,9 +146,12 @@ def signup():
         last_name = request.form.get('last_name')
         phone_number = request.form.get('phone_number')
 
+        app.logger.info(f"Signup attempt for email: {email}")
+
         # 2. Check if user already exists (Prevents generic errors)
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
+            app.logger.warning(f"Signup failed - email already exists: {email}")
             flash("An account with this email already exists.")
             return redirect(url_for('signup'))
 
@@ -143,11 +174,14 @@ def signup():
             db.session.commit()
 
             # 5. Automatically log them in and head to dashboard
-            login_user(new_user)
+            login_user(new_user, remember=True)
+            session.permanent = True
+            app.logger.info(f"Signup successful for user: {email}")
             return redirect(url_for('dashboard'))
 
         except Exception as e:
             db.session.rollback()  # Undo any partial changes
+            app.logger.error(f"Database Error during signup: {e}")
             flash("An error occurred during registration. Please try again.")
             print(f"Database Error: {e}")  # This helps you debug in the terminal
 
@@ -157,10 +191,19 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        user = User.query.filter_by(email=request.form.get('username')).first()
-        if user and check_password_hash(user.password, request.form.get('password')):
-            login_user(user)
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        app.logger.info(f"Login attempt for email: {email}")
+        
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user, remember=True)
+            session.permanent = True
+            app.logger.info(f"Login successful for user: {email}")
             return redirect(url_for('dashboard'))
+        
+        app.logger.warning(f"Login failed for email: {email}")
         flash("Invalid credentials.")
     return render_template('auth.html', mode='login')
 
